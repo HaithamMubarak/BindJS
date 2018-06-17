@@ -16,10 +16,9 @@ BindJS is an easy implementation for data binding either bidirectional or one-wa
 </ul>
 
 # Examples
-Sample codes will be attached in a couple of days.
+More sample codes and descriptions will be attached.
 ```html
 <script src="bind-js.js"></script>
-
 <div bindjs-id="app">
 	<div>
 		<span>App name and version:</span>
@@ -44,6 +43,15 @@ Sample codes will be attached in a couple of days.
 	console.log(appJson);
 </script>
 ```
+<body><div bindjs-id="app">
+	<div>
+		<span>App name and version:</span>
+		<b><span bindjs-id="name">TestApp</span></b>
+		<b><span bindjs-id="version">V1.1</span></b>
+	</div>	
+</div>
+<br>
+<div>app json: <b><span bindjs-ref="app">{"name":"TestApp","version":"V1.1"}</span></b></div>
 
 # What is next?
 <ul>
