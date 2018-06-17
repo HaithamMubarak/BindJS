@@ -15,6 +15,7 @@ BindJS is an easy implementation for data binding either bidirectional or one-wa
   </li>
   <li><b>bindjs-value</b>: the bind value for dom element, value will be either dom element property or attrbiute. This value will be bound to app context and will be referenced by bind id path</li>
 </ul>
+
 # What is next?
 <ul>
   <li>Adding support to bind array data.</li>
