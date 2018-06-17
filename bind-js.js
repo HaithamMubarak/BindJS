@@ -27,6 +27,12 @@
     const BINDJS_TREE_SEPARATOR = ".";
     const BINDJS_REFERENCE_SEPARATOR = ":";
     const BINDJS_DOM_ATTRIBUTE = "@";
+    const BINDJS_ID_REGEX = /^[\-_a-zA-Z0-9]+$/;
+
+    /**
+     * BindJS Interface variable.
+     */
+    var BindJS;
 
     /**
      * Bidirectional data changes (Two ways data change).
@@ -98,15 +104,40 @@
     }
     /**
      * 
-     * @param {*} element 
-     * @param {*} bindPath 
      */
-    function changeHandler(element, bindPath) {
+    function changeHandler() {
+        /**
+         * Notify contexts
+         */
+        var context = BindJS.context(this.bindPath);
+        var stopEvent = false;
+        var changeEvent = {
+            name : 'contextchange',
+            original : context,
+            stopPropagation : function(){
+                stopEvent = true;
+            }
+        }
+
+        while(context != null && !stopEvent){
+            if(typeof context.onchange == 'function'){
+                context.onchange(changeEvent);
+            }
+            if(typeof context._parentContext == 'function'){
+                context = context._parentContext();
+            }else{
+                context = null;
+            }
+            
+        }
+
+        /**
+         * Notify references
+         */
         var references = ReferenceBinds[this.bindPath] || [];
         for (var i = 0; i < references.length; i++) {
             var reference = references[i];
             //console.log('notify',reference,this.getValue())
-
             updateDom(reference.dom, reference.key, this.getValue(), reference.bindType);
 
         }
@@ -123,17 +154,17 @@
      * 
      * @param {*} propertyKey 
      */
-    function getBindType(propertyKey){
+    function getBindType(propertyKey) {
         var bindType = DataBind.TYPE.PROPERTY;
         if (propertyKey.startsWith(BINDJS_DOM_ATTRIBUTE)) {
             propertyKey = propertyKey.substring(1);
             bindType = DataBind.TYPE.ATTRIBUTE;
         }
         return {
-            key : propertyKey,
-            type : bindType
+            key: propertyKey,
+            type: bindType
         }
-    }    
+    }
     /**
      * Checks and returns bound dom property with app context.
      * @param {*} bindDom 
@@ -232,14 +263,118 @@
     }
 
     /**
+     * Context events
+     */
+    var ContextEvents = [
+        'onchange'
+    ];
+    /*
+     * Context functions
+     */
+    var ContextFunctions = {
+        _parentContext: function () {
+            var context;
+            var parentPath = this.bindPath().replace(/(.*)\..+$/,"$1");
+            if(parentPath != this.bindPath()){
+                context = BindJS.context(parentPath);
+            }else{
+                context = null;
+            }
+            return context;
+        },
+        _propertyNames: function () {
+            return Object.keys(this._properties());
+        },
+        _properties: function () {
+            var _properties = {};
+            var names = Object.getOwnpropertyNames(this);
+            for (var i = 0; i < names.length; i++) {
+                var name = names[i];
+                if (this._isProperty(name)) {
+                    _properties[name] = true;
+                }
+            }
+            return _properties;
+        },
+        _isObject: function () {
+            return this._propertyNames().length > 0;
+        },
+        _isProperty: function (key) {
+            return key && ContextEvents.indexOf(key) == -1 &&
+                !key.startsWith(BINDJS_TREE_SEPARATOR) && typeof this[key] != 'function';
+        },
+        dom: function () {
+            return this[BINDJS_TREE_SEPARATOR].dom;
+        },
+        bindPath: function () {
+            return this[BINDJS_TREE_SEPARATOR].bindPath;
+        },
+        foreach: function () {
+            handler.apply(this, [])
+            for (var key in this._properties()) {
+                if (this._isProperty(key)) {
+                    this[key].foreach(handler);
+                }
+            }
+        },
+        val: function () {
+            assert(arguments.length == 0 || arguments.length == 1,
+                "Expected one or zero arguments.");
+            if (arguments.length == 0) {
+                if (!this._isObject()) {
+                    return this[BINDJS_TREE_SEPARATOR].getValue();
+                } else {
+                    var obj = {};
+                    function update(obj, context) {
+                        for (var key in context._properties()) {
+                            if (context._isProperty(key)) {
+                                var contextObj = context[key];
+                                if (contextObj._isObject()) {
+                                    obj[key] = {};
+                                    update(obj[key], contextObj)
+                                } else {
+                                    obj[key] = contextObj.val();
+                                }
+                            }
+                        }
+                    }
+                    update(obj, this);
+                    return JSON.stringify(obj);
+                }
+            } else {
+                var value = arguments[0];
+                if (!this._isObject()) {
+                    this[BINDJS_TREE_SEPARATOR].setValue(value);
+                } else {
+                    var obj = typeof value == 'object' ? value : JSON.parse(arguments[0] + '');
+                    function update(obj, context) {
+                        for (var key in context._properties()) {
+                            if (context._isProperty(key)) {
+                                var contextObj = context[key];
+                                if (!contextObj._isObject()) {
+                                    contextObj.val(obj[key]);
+                                } else {
+                                    update(obj[key], contextObj)
+                                }
+                            }
+                        }
+                    }
+                    update(obj, this);
+                }
+
+            }
+        }
+    }
+
+    /**
      * BindJS Interface.
      */
-    var BindJS = {
+    BindJS = {
         context: function (query) {
             var context = DataBinds;
             if (typeof query == 'string') {
                 var tokens = query.split(BINDJS_TREE_SEPARATOR);
-    
+
                 for (var i = 0; i < tokens.length; i++) {
                     var token = tokens[i];
                     context = context[token];
@@ -248,7 +383,7 @@
                     }
                 }
             }
-    
+
             return context;
         },
         registerBindReference: function (dom, reference) {
@@ -292,8 +427,12 @@
             }
 
             var bindDomValue = getDomBindjsValue(bindDom);
-            var bindKey = bindDom.getAttribute(BINDJS_DOM_ID);
             try {
+                var bindKey = bindDom.getAttribute(BINDJS_DOM_ID) || '';
+                if (!bindKey.match(BINDJS_ID_REGEX)) {
+                    throw new Error(BINDJS_DOM_ID + ' value "' + bindKey + 
+                        '" has wrong format. Values should match regex "' + BINDJS_ID_REGEX + '"');
+                }
                 if (!dataBindsObject) {
 
                     if (!bindKey) {
@@ -323,94 +462,18 @@
                 bindDomValue = bindTypeObj.key;
 
                 /**
-                 * Defines bind properties.
+                 * Defines bind context
                  */
-                defineProtectedProperty(dataBindsObject, 'propertyNames', function () {
-                    return Object.keys(this.properties());
-                });
-                defineProtectedProperty(dataBindsObject, 'properties', function () {
-                    var properties = {};
-                    var names = Object.getOwnPropertyNames(this);
-                    for (var i = 0; i < names.length; i++) {
-                        var name = names[i];
-                        if (this.isProperty(name)) {
-                            properties[name] = true;
-                        }
-                    }
-                    return properties;
-                });
-                defineProtectedProperty(dataBindsObject, 'isObject', function () {
-                    return this.propertyNames().length > 0;
-                });
-                defineProtectedProperty(dataBindsObject, 'isProperty', function (key) {
-                    return key && !key.startsWith(BINDJS_TREE_SEPARATOR) && typeof this[key] != 'function';
-                });
-                defineProtectedProperty(dataBindsObject, 'dom', function () {
-                    return this[BINDJS_TREE_SEPARATOR].dom;
-                });
-                defineProtectedProperty(dataBindsObject, 'bindPath', function () {
-                    return this[BINDJS_TREE_SEPARATOR].bindPath;
-                });
-                defineProtectedProperty(dataBindsObject, 'foreach', function () {
-                    handler.apply(this, [])
-                    for (var key in this.properties()) {
-                        if (this.isProperty(key)) {
-                            this[key].foreach(handler);
-                        }
-                    }
-                });
-                defineProtectedProperty(dataBindsObject, 'val', function () {
-                    assert(arguments.length == 0 || arguments.length == 1,
-                        "Expected one or zero arguments.");
-                    if (arguments.length == 0) {
-                        if (!this.isObject()) {
-                            return this[BINDJS_TREE_SEPARATOR].getValue();
-                        } else {
-                            var obj = {};
-                            function update(obj, context) {
-                                for (var key in context.properties()) {
-                                    if (context.isProperty(key)) {
-                                        var contextObj = context[key];
-                                        if (contextObj.isObject()) {
-                                            obj[key] = {};
-                                            update(obj[key], contextObj)
-                                        } else {
-                                            obj[key] = contextObj.val();
-                                        }
-                                    }
-                                }
-                            }
-                            update(obj, this);
-                            return JSON.stringify(obj);
-                        }
-                    } else {
-                        var value = arguments[0];
-                        if (!this.isObject()) {
-                            this[BINDJS_TREE_SEPARATOR].setValue(value);
-                        } else {
-                            var obj = typeof value == 'object' ? value : JSON.parse(arguments[0] + '');
-                            function update(obj, context) {
-                                for (var key in context.properties()) {
-                                    if (context.isProperty(key)) {
-                                        var contextObj = context[key];
-                                        if (!contextObj.isObject()) {
-                                            contextObj.val(obj[key]);
-                                        } else {
-                                            update(obj[key], contextObj)
-                                        }
-                                    }
-                                }
-                            }
-                            update(obj, this);
-                        }
-
-                    }
-                });
+                for (var i = 0; i < ContextEvents.length; i++) {
+                    dataBindsObject[ContextEvents[i]] = null;
+                }
+                for (var functionName in ContextFunctions) {
+                    defineProtectedProperty(dataBindsObject, functionName, ContextFunctions[functionName]);
+                }
                 defineProtectedProperty(dataBindsObject, BINDJS_TREE_SEPARATOR,
-                     new DataBind(bindDom, bindType, bindDomValue, changeEventName, path));
+                    new DataBind(bindDom, bindType, bindDomValue, changeEventName, path));
 
             } catch (error) {
-                console.log('Error at bind id :', bindKey);
                 //console.error(error);
                 throw error;
             }
@@ -439,7 +502,7 @@
                     var newPath = path ? (path + BINDJS_TREE_SEPARATOR + bindjsDomId) : bindjsDomId;
                     BindJS.registerBind(child, dataBindsObject[bindjsDomId], newPath);
                     findAndBindDoms(child, dataBindsObject[bindjsDomId], newPath);
-                }else{
+                } else {
                     findAndBindDoms(child, dataBindsObject, newPath);
                 }
             }
