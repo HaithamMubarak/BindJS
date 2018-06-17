@@ -43,6 +43,7 @@ More sample codes and descriptions will be attached.
 	console.log(appJson);
 </script>
 ```
+```
 <body><div bindjs-id="app">
 	<div>
 		<span>App name and version:</span>
@@ -52,7 +53,7 @@ More sample codes and descriptions will be attached.
 </div>
 <br>
 <div>app json: <b><span bindjs-ref="app">{"name":"TestApp","version":"V1.1"}</span></b></div>
-
+```
 # What is next?
 <ul>
   <li>Adding support to bind array data.</li>
