@@ -102,33 +102,45 @@
             }
         }
     }
+
+    /**
+     * 
+     * @param {*} reference 
+     * @param {*} value 
+     * @param {*} bindType 
+     */
+    function updateDomByReference(reference,value){
+        updateDom(reference.dom, reference.key, value, reference.bindType);    
+    }
+
     /**
      * 
      */
-    function changeHandler() {
+    function changeHandler(updateReferencesOnly) {
         /**
          * Notify contexts
          */
-        var context = BindJS.context(this.bindPath);
-        var stopEvent = false;
-        var changeEvent = {
-            name : 'contextchange',
-            original : context,
-            stopPropagation : function(){
-                stopEvent = true;
+        if(!updateReferencesOnly){
+            var context = BindJS.context(this.bindPath);
+            var stopEvent = false;
+            var changeEvent = {
+                name : 'contextchange',
+                original : context,
+                stopPropagation : function(){
+                    stopEvent = true;
+                }
             }
-        }
-
-        while(context != null && !stopEvent){
-            if(typeof context.onchange == 'function'){
-                context.onchange(changeEvent);
+            while(context != null && !stopEvent){
+                if(typeof context.onchange == 'function'){
+                    context.onchange(changeEvent);
+                }
+                if(typeof context._parentContext == 'function'){
+                    context = context._parentContext();
+                }else{
+                    context = null;
+                }
+                
             }
-            if(typeof context._parentContext == 'function'){
-                context = context._parentContext();
-            }else{
-                context = null;
-            }
-            
         }
 
         /**
@@ -138,8 +150,7 @@
         for (var i = 0; i < references.length; i++) {
             var reference = references[i];
             //console.log('notify',reference,this.getValue())
-            updateDom(reference.dom, reference.key, this.getValue(), reference.bindType);
-
+            updateDomByReference(reference, this.getValue());
         }
     }
     /**
@@ -242,7 +253,7 @@
             }
             if (newValue != this.getValue()) {
                 updateDom(element, dataBindKey, newValue, bindType);
-                element.dispatchEvent(new Event(changeEventName));
+                changeHandler.apply(_self, [true])
             }
         }
 
@@ -251,10 +262,11 @@
             changeHandler.apply(_self, [])
         });
 
-        changeHandler.apply(this, []);
+        changeHandler.apply(this, [true]);
 
         this.dom = element;
         this.bindId = dataBindKey;
+
         this.bindPath = bindPath;
 
     }
@@ -287,7 +299,7 @@
         },
         _properties: function () {
             var _properties = {};
-            var names = Object.getOwnpropertyNames(this);
+            var names = Object.getOwnPropertyNames(this);
             for (var i = 0; i < names.length; i++) {
                 var name = names[i];
                 if (this._isProperty(name)) {
@@ -379,7 +391,7 @@
                     var token = tokens[i];
                     context = context[token];
                     if (!context) {
-                        throw new Error('Unable to get context for ' + query)
+                        throw new Error('No context found for ' + query)
                     }
                 }
             }
@@ -406,11 +418,14 @@
                 propertyKey = bindTypeObj.key;
 
                 ReferenceBinds[bindRef] = ReferenceBinds[bindRef] || [];
-                ReferenceBinds[bindRef].push({
+                var referenceObj = {
                     dom: dom,
                     key: propertyKey,
                     bindType: bindType
-                });
+                };
+                ReferenceBinds[bindRef].push(referenceObj);
+                // Update reference
+                updateDomByReference(referenceObj, this.context(bindRef).val());
             } else {
                 throw new Error('BindJS Reference is not defined.');
             }
@@ -482,14 +497,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        /**
-         * Registers bindjs references
-         */
-        var bindJsReferences = document.body.querySelectorAll('[' + BINDJS_DOM_REF + ']');
-        for (var i = 0; i < bindJsReferences.length; i++) {
-            var child = bindJsReferences[i];
-            BindJS.registerBindReference(child, child.getAttribute(BINDJS_DOM_REF));
-        }
+ 
         /**
          * Registers bindjs elements
          */
@@ -503,12 +511,21 @@
                     BindJS.registerBind(child, dataBindsObject[bindjsDomId], newPath);
                     findAndBindDoms(child, dataBindsObject[bindjsDomId], newPath);
                 } else {
-                    findAndBindDoms(child, dataBindsObject, newPath);
+                    findAndBindDoms(child, dataBindsObject, path);
                 }
             }
 
         }
         findAndBindDoms(document.body, DataBinds, '');
+
+        /**
+         * Registers bindjs references
+         */
+        var bindJsReferences = document.body.querySelectorAll('[' + BINDJS_DOM_REF + ']');
+        for (var i = 0; i < bindJsReferences.length; i++) {
+            var child = bindJsReferences[i];
+            BindJS.registerBindReference(child, child.getAttribute(BINDJS_DOM_REF));
+        }
     })
     window.BindJS = BindJS;
 })();
