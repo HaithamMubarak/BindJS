@@ -1,4 +1,3 @@
-
 /**
  * Copyright (C) 2018 bind-js Haitham Mubarak 
  * 
@@ -39,12 +38,28 @@
      */
     var ReferenceBinds = {}
 
+
+    /*
+     * ================================
+     * Utility function defintions.
+     *================================
+     */    
+
+    /**
+     * @param {boolean} condition 
+     * @param {string} failMessage 
+     */
     function assert(condition, failMessage) {
         if (!condition) {
             throw new Error(failMessage);
         }
     }
-
+    /**
+     * 
+     * @param {*} object 
+     * @param {*} property 
+     * @param {*} value 
+     */
     function defineProtectedProperty(object, property, value) {
         //object[property] = value;
         //return;
@@ -53,10 +68,15 @@
             writable: false
         });
     }
-
+    /**
+     * 
+     * @param {*} dom 
+     * @param {*} property 
+     * @param {*} newValue 
+     * @param {*} bindType 
+     */
     function updateDom(dom, property, newValue, bindType) {
         if (bindType == DataBind.TYPE.ATTRIBUTE) {
-            property = property.substring(1);
             dom.setAttribute(property, newValue);
         } else {
             var tokens = property.split(BINDJS_TREE_SEPARATOR);
@@ -79,6 +99,11 @@
         }
     }
 
+    /**
+     * 
+     * @param {*} element 
+     * @param {*} bindPath 
+     */
     function changeHandler(element, bindPath) {
         var references = ReferenceBinds[this.bindPath] || [];
         for (var i = 0; i < references.length; i++) {
@@ -89,13 +114,59 @@
 
         }
     }
-
+    /**
+     * 
+     */
     function createEmptyBind() {
         var obj = {};
         obj[BINDJS_TREE_SEPARATOR] = null;
         return obj;
     }
+    /**
+     * 
+     * @param {*} propertyKey 
+     */
+    function getBindType(propertyKey){
+        var bindType = DataBind.TYPE.PROPERTY;
+        if (propertyKey.startsWith(BINDJS_DOM_ATTRIBUTE)) {
+            propertyKey = propertyKey.substring(1);
+            bindType = DataBind.TYPE.ATTRIBUTE;
+        }
+        return {
+            key : propertyKey,
+            type : bindType
+        }
+    }
+    
+    /**
+     * Checks and returns default bound dom property with app context.
+     * @param {*} bindDom 
+     * @param {*} val 
+     */
+    function getDomBindjsValue(bindDom, val) {
+        var bindDomValue = val || bindDom.getAttribute(BINDJS_DOM_VALUE);
 
+        if (!bindDomValue) {
+            var tagName = bindDom.tagName.toLowerCase();
+            if (tagName == 'input') {
+                bindDomValue = 'value';
+            } else {
+                bindDomValue = 'innerText';
+            }
+        }
+
+        return bindDomValue;
+    }
+
+    /**
+     * Used as an internal implemention for dom data/events binding.
+     * 
+     * @param {*} element 
+     * @param {*} bindType 
+     * @param {*} dataBindKey 
+     * @param {*} changeEventName 
+     * @param {*} bindPath 
+     */
     var DataBind = function (element, bindType, dataBindKey, changeEventName, bindPath) {
 
         var bindDomMap = element.getAttribute(BINDJS_DOM_MAP) || '';
@@ -160,46 +231,30 @@
         this.bindPath = bindPath;
 
     }
-
     DataBind.TYPE = {
         ATTRIBUTE: "attribute", PROPERTY: "property"
     }
 
-    function getDomBindjsValue(bindDom, val) {
-        var bindDomValue = val || bindDom.getAttribute(BINDJS_DOM_VALUE);
 
-        if (!bindDomValue) {
-            var tagName = bindDom.tagName.toLowerCase();
-            if (tagName == 'input') {
-                bindDomValue = 'value';
-            } else {
-                bindDomValue = 'innerText';
-            }
-        }
-
-        return bindDomValue;
-    }
-    function getDataBindContext(query) {
-        var context = DataBinds;
-        if (typeof query == 'string') {
-            var tokens = query.split(BINDJS_TREE_SEPARATOR);
-
-            for (var i = 0; i < tokens.length; i++) {
-                var token = tokens[i];
-                context = context[token];
-                if (!context) {
-                    throw new Error('Unable to get context for ' + query)
-                }
-            }
-        }
-
-        return context;
-
-    }
-
+    /**
+     * BindJS Interface.
+     */
     var BindJS = {
         context: function (query) {
-            return getDataBindContext(query);
+            var context = DataBinds;
+            if (typeof query == 'string') {
+                var tokens = query.split(BINDJS_TREE_SEPARATOR);
+    
+                for (var i = 0; i < tokens.length; i++) {
+                    var token = tokens[i];
+                    context = context[token];
+                    if (!context) {
+                        throw new Error('Unable to get context for ' + query)
+                    }
+                }
+            }
+    
+            return context;
         },
 
         registerBindReference: function (dom, reference) {
@@ -217,14 +272,9 @@
                     bindRef = tokens[1];
                 }
 
-                /**
-                 * Sets Bind Type
-                 */
-                bindType = DataBind.TYPE.PROPERTY;
-                if (propertyKey.startsWith(BINDJS_DOM_ATTRIBUTE)) {
-                    propertyKey = propertyKey.substring(1);
-                    bindType = DataBind.TYPE.ATTRIBUTE;
-                }
+                var bindTypeObj = getBindType(propertyKey);
+                var bindType = bindTypeObj.type;
+                propertyKey = bindTypeObj.key;
 
                 ReferenceBinds[bindRef] = ReferenceBinds[bindRef] || [];
                 ReferenceBinds[bindRef].push({
@@ -249,7 +299,6 @@
             }
 
             var bindDomValue = getDomBindjsValue(bindDom);
-
             var bindKey = bindDom.getAttribute(BINDJS_DOM_ID);
             try {
                 if (!dataBindsObject) {
@@ -276,14 +325,9 @@
                     }
                 }
 
-                /**
-                 * Sets Bind Type
-                 */
-                var bindType = DataBind.TYPE.PROPERTY;
-                if (bindDomValue.startsWith(BINDJS_DOM_ATTRIBUTE)) {
-                    bindType = DataBind.TYPE.ATTRIBUTE;
-                    bindDomValue = bindDomValue.substring(1);
-                }
+                var bindTypeObj = getBindType(bindDomValue);
+                var bindType = bindTypeObj.type;
+                bindDomValue = bindTypeObj.key;
 
                 /**
                  * Defines bind properties.
@@ -300,13 +344,12 @@
                             properties[name] = true;
                         }
                     }
-
                     return properties;
                 });
                 defineProtectedProperty(dataBindsObject, 'isObject', function () {
                     return this.propertyNames().length > 0;
                 });
-                defineProtectedProperty(dataBindsObject, 'isProperty', function () {
+                defineProtectedProperty(dataBindsObject, 'isProperty', function (key) {
                     return key && !key.startsWith(BINDJS_TREE_SEPARATOR) && typeof this[key] != 'function';
                 });
                 defineProtectedProperty(dataBindsObject, 'dom', function () {
