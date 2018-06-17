@@ -135,7 +135,7 @@
         }
     }    
     /**
-     * Checks and returns default bound dom property with app context.
+     * Checks and returns bound dom property with app context.
      * @param {*} bindDom 
      * @param {*} val 
      */
