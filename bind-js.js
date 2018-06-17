@@ -439,6 +439,8 @@
                     var newPath = path ? (path + BINDJS_TREE_SEPARATOR + bindjsDomId) : bindjsDomId;
                     BindJS.registerBind(child, dataBindsObject[bindjsDomId], newPath);
                     findAndBindDoms(child, dataBindsObject[bindjsDomId], newPath);
+                }else{
+                    findAndBindDoms(child, dataBindsObject, newPath);
                 }
             }
 
