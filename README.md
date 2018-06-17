@@ -3,7 +3,7 @@ BindJS is an easy implementation for data binding either bidirectional or one-wa
 <ul>
   <li>BindJS supports bidirectional data binding and provides simple interface to access/update app data and ui preferences.</li>
   <li>BindJS supports one-way data binding with binding reference feature.</li>
-  <li>BindJS has ability to specify the mapping between app data and dome element properties.</li>
+  <li>BindJS has ability to specify the mapping between app data and dom element properties.</li>
 </ul>
 
 # BindJS Markups
