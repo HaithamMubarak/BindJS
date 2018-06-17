@@ -53,7 +53,8 @@ More sample codes and descriptions will be attached.
 </div>
 <br>
 <div>app json: <b><span bindjs-ref="app">{"name":"TestApp","version":"V1.1"}</span></b></div>
-<p>
+</p>
+	
 # What is next?
 <ul>
   <li>Adding support to bind array data.</li>
