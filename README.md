@@ -43,7 +43,8 @@ More sample codes and descriptions will be attached.
 	console.log(appJson);
 </script>
 ```
-```bash
+<b>Result:</b>
+
 <p>
 <body><div bindjs-id="app">
 	<div>
@@ -55,7 +56,7 @@ More sample codes and descriptions will be attached.
 <br>
 <div>app json: <b><span bindjs-ref="app">{"name":"TestApp","version":"V1.1"}</span></b></div>
 </p>
-```
+
 	
 # What is next?
 <ul>
