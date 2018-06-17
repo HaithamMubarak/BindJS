@@ -17,6 +17,7 @@ BindJS is an easy implementation for data binding either bidirectional or one-wa
 
 # Examples
 Sample codes will be attached in a couple of days.
+![alt text](sample.png)
 
 # What is next?
 <ul>
