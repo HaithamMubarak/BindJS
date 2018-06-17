@@ -260,11 +260,11 @@
                     while (bindDomId.parentNode != document) {
                         var parentNode = bindDomId.parentNode;
                         if (parentNode.hasAttribute(BINDJS_DOM_ID)) {
-                            bindKey = parentNode.getAttribute(BINDJS_DOM_ID) + '.' + bindKey;
+                            bindKey = parentNode.getAttribute(BINDJS_DOM_ID) + BINDJS_TREE_SEPARATOR + bindKey;
                         }
                     }
                     path = bindKey;
-                    var bindKeyTokens = bindKey.split('.');
+                    var bindKeyTokens = bindKey.split(BINDJS_TREE_SEPARATOR);
                     dataBindsObject = DataBinds;
                     for (var i = 0; i < bindKeyTokens.length; i++) {
                         var token = bindKeyTokens[i];
@@ -402,7 +402,7 @@
                 if (child.hasAttribute(BINDJS_DOM_ID)) {
                     bindjsDomId = child.getAttribute(BINDJS_DOM_ID);
                     defineProtectedProperty(dataBindsObject, bindjsDomId, createEmptyBind())
-                    var newPath = path ? (path + '.' + bindjsDomId) : bindjsDomId;
+                    var newPath = path ? (path + BINDJS_TREE_SEPARATOR + bindjsDomId) : bindjsDomId;
                     BindJS.registerBind(child, dataBindsObject[bindjsDomId], newPath);
                     findAndBindDoms(child, dataBindsObject[bindjsDomId], newPath);
                 }
