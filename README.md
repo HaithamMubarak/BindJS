@@ -15,7 +15,8 @@ BindJS is an easy implementation for data binding either bidirectional or one-wa
     <li><b>bindjs-ref</b>: creates a reference to some bound dom element with app context. This is the support for one-way data binding, if the referenced bind context changed, this dom will be updated as well but not versa vice.</li>
 </ul>
 
-# Sample codes will be attached in a couple of days.
+# Examples
+Sample codes will be attached in a couple of days.
 
 # What is next?
 <ul>
