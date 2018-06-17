@@ -38,13 +38,11 @@
      */
     var ReferenceBinds = {}
 
-
     /*
      * ================================
      * Utility function defintions.
      *================================
-     */    
-
+     */
     /**
      * @param {boolean} condition 
      * @param {string} failMessage 
@@ -98,7 +96,6 @@
             }
         }
     }
-
     /**
      * 
      * @param {*} element 
@@ -136,8 +133,7 @@
             key : propertyKey,
             type : bindType
         }
-    }
-    
+    }    
     /**
      * Checks and returns default bound dom property with app context.
      * @param {*} bindDom 
@@ -235,7 +231,6 @@
         ATTRIBUTE: "attribute", PROPERTY: "property"
     }
 
-
     /**
      * BindJS Interface.
      */
@@ -256,7 +251,6 @@
     
             return context;
         },
-
         registerBindReference: function (dom, reference) {
 
             reference = reference || dom.getAttribute(BINDJS_DOM_REF);
@@ -286,7 +280,6 @@
                 throw new Error('BindJS Reference is not defined.');
             }
         },
-
         registerBind: function (bindDom, dataBindsObject, path) {
 
             var tagName = bindDom.tagName.toLowerCase();
@@ -426,16 +419,14 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-
         /**
-         * Register bindjs references
+         * Registers bindjs references
          */
         var bindJsReferences = document.body.querySelectorAll('[' + BINDJS_DOM_REF + ']');
         for (var i = 0; i < bindJsReferences.length; i++) {
             var child = bindJsReferences[i];
             BindJS.registerBindReference(child, child.getAttribute(BINDJS_DOM_REF));
         }
-
         /**
          * Registers bindjs elements
          */
@@ -452,10 +443,7 @@
             }
 
         }
-
         findAndBindDoms(document.body, DataBinds, '');
-
     })
     window.BindJS = BindJS;
-
 })();
