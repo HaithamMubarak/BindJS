@@ -49,6 +49,7 @@ Note: More sample codes and descriptions will be attached.
 </script>
 ```
 <b>HTML Result:</b>
+<hr/>
 <p>
 	<div bindjs-id="app">
 		<div>
@@ -60,6 +61,7 @@ Note: More sample codes and descriptions will be attached.
 	<br>
 	<div>app json: <b><span bindjs-ref="app">{"name":"TestApp","version":"V1.1"}</span></b></div>
 </p>
+<hr/>
 
 <p>
 	In above example you can see that there is some dom elements with bindjs markups. <b>BindJS.context('app')</b> creates new 
