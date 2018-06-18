@@ -4,19 +4,24 @@ BindJS is an easy implementation for data binding either bidirectional or one-wa
   <li>BindJS supports bidirectional data binding and provides simple interface to access/update app data and ui preferences.</li>
   <li>BindJS supports one-way data binding with binding reference feature.</li>
   <li>BindJS has ability to specify the mapping between app data and dom element properties.</li>
+  <li>BindJS has ability to create app contexts and sub contexts by using bind path.</li>
+  <li>BindJS has ability to get app contexts data as json. with this, you can also update all view doms elements in app context by passing json input.</li>
 </ul>
 
 # BindJS Markups
 <ul>
   <li>
-    <b>bindjs-id</b>: the current bind id for dom element. Based on bind ids sequence, binding context will be determine.
+    <b>bindjs-id</b>: the current bind id for dom element. Based on bind ids sequence (bind path), binding context will be determined.
   </li>
   <li><b>bindjs-value</b>: the bind value for dom element, value will be either dom element property or attrbiute. This value will be bound to app context and will be referenced by bind id path</li>
     <li><b>bindjs-ref</b>: creates a reference to some bound dom element with app context. This is the support for one-way data binding, if the referenced bind context changed, this dom will be updated as well but not versa vice.</li>
 </ul>
 
 # Examples
-More sample codes and descriptions will be attached.
+Note: More sample codes and descriptions will be attached.
+
+<p>Please consider the basic example below:</p>
+
 ```html
 <script src="bind-js.js"></script>
 <div bindjs-id="app">
@@ -38,25 +43,72 @@ More sample codes and descriptions will be attached.
 	// Update value for app.version
 	app.version.val('V1.1');
 
-	// Gets app context as json string.
+	// Get app context as json string.
 	var appJson = app.val();
 	console.log(appJson);
 </script>
 ```
-<b>Result:</b>
-
+<b>HTML Result:</b>
 <p>
-<body><div bindjs-id="app">
-	<div>
-		<span>App name and version:</span>
-		<b><span bindjs-id="name">TestApp</span></b>
-		<b><span bindjs-id="version">V1.1</span></b>
-	</div>	
-</div>
-<br>
-<div>app json: <b><span bindjs-ref="app">{"name":"TestApp","version":"V1.1"}</span></b></div>
+	<div bindjs-id="app">
+		<div>
+			<span>App name and version:</span>
+			<b><span bindjs-id="name">TestApp</span></b>
+			<b><span bindjs-id="version">V1.1</span></b>
+		</div>	
+	</div>
+	<br>
+	<div>app json: <b><span bindjs-ref="app">{"name":"TestApp","version":"V1.1"}</span></b></div>
 </p>
 
+<p>
+	In above example you can see that there is some dom elements with bindjs markups. <i>BindJS.context('app')</i> created new 
+	context by binding path 'app'. From html code above, you see that dom element with bindid 'app' has some descendants elements
+	with bindjs-id, by this context 'app' will have the control for all descendants doms (name and version) so we have contexts:
+	app, app.name and app.version.
+</p>
+
+<ul>
+	<li>
+		app is the parent context for app.name & app.value. For any context have sub contexts, the data from sub contexts will
+		be serialized as json (also it accepts json string data).
+	</li>	
+	<li>
+		Data for app.name or app.version will be some dom data for the bound element (by default it is 'innerText' for 
+		non-input elements and 'value' for input elements). This is also applied for any non-object context (with no sub
+		contexts)
+	</li>
+	<li>
+		The value for any single context (with no sub contexts) can be changed to some dom element property or attribute by 
+		using <i>bindjs-value</i> (will be Described later)
+	</li>
+</ul>
+
+<p> 
+	To get any context data, you can simple use 'val' method:
+
+	```javascript
+	var nameVal = app.name.val() // Gets the context value for app.name, for above sample value will be el.innerText
+			             // for the element with [bindjs-id='app'] [bindjs-id='name']
+	var versionVal = app.version.val() // Gets the context value for app.version, for above sample value will be el.innerText
+			                   // for the element with [bindjs-id='app'] [bindjs-id='version']
+	var appVal = app.val() // Gets the context value for app, for above sample value will be 
+			    // {"name":app.name.val(),"version":app.version.val()}. Any context have sub contexts, its value will be
+			    // serialized as a json object.
+	```
+	
+	Any context data can be changed also using val method:
+	```javascript
+	app.name.val('MyApp') // Changes value of context app.name to 'MyApp'. element [bindjs-id='app'] [bindjs-id='name'] value will
+			      // be also updated
+
+	app.val('{"name":"MyApp2","version":"V1.3"}') // Updates value for app context by json data. All sub contexts 
+						     // (app.name and app.version) will be updated with data from json input.
+
+	```
+	
+	
+</p>
 	
 # What is next?
 <ul>
