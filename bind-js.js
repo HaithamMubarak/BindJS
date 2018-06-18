@@ -117,11 +117,12 @@
      * 
      */
     function changeHandler(updateReferencesOnly) {
+        var context = BindJS.context(this.bindPath);
+        var parentContext = context;
         /**
          * Notify contexts
          */
-        if(!updateReferencesOnly){
-            var context = BindJS.context(this.bindPath);
+        if(!updateReferencesOnly){            
             var stopEvent = false;
             var changeEvent = {
                 name : 'contextchange',
@@ -150,7 +151,8 @@
         for (var i = 0; i < references.length; i++) {
             var reference = references[i];
             //console.log('notify',reference,this.getValue())
-            updateDomByReference(reference, this.getValue());
+            //updateDomByReference(reference, this.getValue());
+            updateDomByReference(reference, parentContext.val());
         }
     }
     /**
@@ -275,6 +277,49 @@
     }
 
     /**
+     * Init binding contexts if there are not initialized. 
+     */
+     var ready = false;
+     var initializing = false; 
+     function init(){
+        if(initializing || ready){
+            return;
+        }
+        initializing = true;
+        /**
+         * Registers bindjs elements
+         */
+        function findAndBindDoms(parentDom, dataBindsObject, path) {
+            for (var i = 0; i < parentDom.children.length; i++) {
+                var child = parentDom.children[i];
+                if (child.hasAttribute(BINDJS_DOM_ID)) {
+                    bindjsDomId = child.getAttribute(BINDJS_DOM_ID);
+                    defineProtectedProperty(dataBindsObject, bindjsDomId, createEmptyBind())
+                    var newPath = path ? (path + BINDJS_TREE_SEPARATOR + bindjsDomId) : bindjsDomId;
+                    BindJS.registerBind(child, dataBindsObject[bindjsDomId], newPath);
+                    findAndBindDoms(child, dataBindsObject[bindjsDomId], newPath);
+                } else {
+                    findAndBindDoms(child, dataBindsObject, path);
+                }
+            }
+
+        }
+        findAndBindDoms(document.body, DataBinds, '');
+
+        /**
+         * Registers bindjs references
+         */
+        var bindJsReferences = document.body.querySelectorAll('[' + BINDJS_DOM_REF + ']');
+        for (var i = 0; i < bindJsReferences.length; i++) {
+            var child = bindJsReferences[i];
+            BindJS.registerBindReference(child, child.getAttribute(BINDJS_DOM_REF));
+        }
+
+        initializing = false;
+        ready = true;
+     }
+
+    /**
      * Context events
      */
     var ContextEvents = [
@@ -383,6 +428,7 @@
      */
     BindJS = {
         context: function (query) {
+            init();
             var context = DataBinds;
             if (typeof query == 'string') {
                 var tokens = query.split(BINDJS_TREE_SEPARATOR);
@@ -496,36 +542,8 @@
 
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
- 
-        /**
-         * Registers bindjs elements
-         */
-        function findAndBindDoms(parentDom, dataBindsObject, path) {
-            for (var i = 0; i < parentDom.children.length; i++) {
-                var child = parentDom.children[i];
-                if (child.hasAttribute(BINDJS_DOM_ID)) {
-                    bindjsDomId = child.getAttribute(BINDJS_DOM_ID);
-                    defineProtectedProperty(dataBindsObject, bindjsDomId, createEmptyBind())
-                    var newPath = path ? (path + BINDJS_TREE_SEPARATOR + bindjsDomId) : bindjsDomId;
-                    BindJS.registerBind(child, dataBindsObject[bindjsDomId], newPath);
-                    findAndBindDoms(child, dataBindsObject[bindjsDomId], newPath);
-                } else {
-                    findAndBindDoms(child, dataBindsObject, path);
-                }
-            }
-
-        }
-        findAndBindDoms(document.body, DataBinds, '');
-
-        /**
-         * Registers bindjs references
-         */
-        var bindJsReferences = document.body.querySelectorAll('[' + BINDJS_DOM_REF + ']');
-        for (var i = 0; i < bindJsReferences.length; i++) {
-            var child = bindJsReferences[i];
-            BindJS.registerBindReference(child, child.getAttribute(BINDJS_DOM_REF));
-        }
+    document.addEventListener('DOMContentLoaded', function () { 
+        init();
     })
     window.BindJS = BindJS;
 })();
