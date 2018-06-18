@@ -62,24 +62,24 @@ Note: More sample codes and descriptions will be attached.
 </p>
 
 <p>
-	In above example you can see that there is some dom elements with bindjs markups. <i>BindJS.context('app')</i> created new 
-	context by binding path 'app'. From html code above, you see that dom element with bindid 'app' has some descendants elements
+	In above example you can see that there is some dom elements with bindjs markups. <b>BindJS.context('app')</b> creates new 
+	context for binding path 'app' (or dom element selector '[bindjs-id="app"]'). From html code above, you see that dom element with bindid 'app' has some descendants elements
 	with bindjs-id, by this context 'app' will have the control for all descendants doms (name and version) so we have contexts:
-	app, app.name and app.version.
+	<b>app</b>, <b>app.name</b> and <b>app.version</b>.
 </p>
 
 <ul>
 	<li>
-		app is the parent context for app.name & app.value. For any context have sub contexts, the data from sub contexts will
+		<b>app</b> is the parent context for app.name & app.value. For any context have sub contexts, the data from sub contexts will
 		be serialized as json (also it accepts json string data).
 	</li>	
 	<li>
-		Data for app.name or app.version will be some dom property/attribute for the bound element (by default it is 'innerText' for 
-		non-input elements and 'value' for input elements). This is also applied for any single element context.
+		Data for <b>app.name</b> or <b>app.version</b> will be some dom property/attribute for the bound element (by default it is 'this.innerText' for 
+		non-input elements and 'this.value' for input elements). This is also applied for any single element context.
 	</li>
 	<li>
 		The value for any single context (with no sub contexts) can be changed to some dom element property or attribute by 
-		using <i>bindjs-value</i> markup. (will be described later)
+		using <b>bindjs-value</b> markup. (will be described later)
 	</li>
 </ul>
 
