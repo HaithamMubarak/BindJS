@@ -9,13 +9,34 @@ BindJS is an easy implementation for data binding either bidirectional or one-wa
 </ul>
 
 # BindJS Markups
-<ul>
-  <li>
-    <b>bindjs-id</b>: the current bind id for dom element. Based on bind ids sequence (bind path), binding context will be determined.
-  </li>
-  <li><b>bindjs-value</b>: the bind value for dom element, value will be either dom element property or attrbiute. This value will be bound to app context and will be referenced by bind id path</li>
-    <li><b>bindjs-ref</b>: creates a reference to some bound dom element with app context. This is the support for one-way data binding, if the referenced bind context changed, this dom will be updated as well but not versa vice.</li>
-</ul>
+
+BindJS has some predefined markups for dom elements. These markups are used for app context binding:
+
+<table>
+	<tr>
+		<th>Markup</th>
+		<th>Description</th>
+	</tr>
+	<tr>
+		<td><b>bindjs-id</b></td>
+		<td>
+			the current bind id for dom element. Based on bind ids sequence (bind path), binding context will be determined.		</td>
+	</tr>
+	<tr>
+		<td><b>bindjs-value</b></td>
+		<td>
+			the bind value for dom element, value will be either dom element property or attrbiute. This value will be bound 
+			to app context and will be referenced by bind id path.
+		</td>
+	</tr>
+	<tr>
+		<td><b>bindjs-ref</b></td>
+		<td>
+			creates a reference to some bound dom element with app context. This is the support for one-way data binding, if 
+			the referenced bind context changed, this dom will be updated as well but not versa vice.
+		</td>
+	</tr>
+</table>
 
 # Examples
 Note: More samples and descriptions will be attached.
@@ -107,7 +128,7 @@ app.val('{"name":"MyApp2","version":"V1.3"}') // Updates value for app context b
 					     // (app.name and app.version) will be updated with data from json input.
 
 ```
-	
+
 # What is next?
 <ul>
   <li>Adding support to bind array data.</li>
