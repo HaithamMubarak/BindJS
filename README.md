@@ -14,23 +14,23 @@ BindJS has some predefined markups for dom elements. These markups are used for 
 
 <table>
 	<tr>
-		<th>Markup</th>
+		<th with="100px">Markup</th>
 		<th>Description</th>
 	</tr>
 	<tr>
-		<td><b>bindjs-id</b></td>
+		<td>bindjs-id</td>
 		<td>
 			the current bind id for dom element. Based on bind ids sequence (bind path), binding context will be determined.		</td>
 	</tr>
 	<tr>
-		<td><b>bindjs-value</b></td>
+		<td>bindjs-value</td>
 		<td>
 			the bind value for dom element, value will be either dom element property or attrbiute. This value will be bound 
 			to app context and will be referenced by bind id path.
 		</td>
 	</tr>
 	<tr>
-		<td><b>bindjs-ref</b></td>
+		<td>bindjs-ref</td>
 		<td>
 			creates a reference to some bound dom element with app context. This is the support for one-way data binding, if 
 			the referenced bind context changed, this dom will be updated as well but not versa vice.
