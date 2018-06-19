@@ -35,7 +35,17 @@ BindJS has some predefined markups for dom elements. These markups are used for 
 			This is the support for one-way data binding. This is used to reference some bound dom element with app context,  			  if the referenced context is changed, this dom will be updated as well but not versa vice.
 		</td>
 	</tr>
+	<tr>
+		<td>bindjs-map</td>
+		<td>
+			Contains a simple map between ui dom element data and context data. For example: '0:val0|1:val1', will update 
+			dom element value with 'val0' if the context is updated with value '0' and 'val1' if it is updated with value 
+			'val1'(mapping function add will be added to extend values mapping)
+		</td>
+	</tr>
 </table>
+
+
 
 # Examples
 Note: More samples and descriptions will be attached.
