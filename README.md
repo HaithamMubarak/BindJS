@@ -14,7 +14,7 @@ BindJS has some predefined markups for dom elements. These markups are used for 
 
 <table>
 	<tr>
-		<th style="width:100px">Markup</th>
+		<th>Markup</th>
 		<th>Description</th>
 	</tr>
 	<tr>
