@@ -32,8 +32,7 @@ BindJS has some predefined markups for dom elements. These markups are used for 
 	<tr>
 		<td>bindjs-ref</td>
 		<td>
-			creates a reference to some bound dom element with app context. This is the support for one-way data binding, if 
-			the referenced bind context changed, this dom will be updated as well but not versa vice.
+			This is the support for one-way data binding. This is used to reference some bound dom element with app context,  			  if the referenced context is changed, this dom will be updated as well but not versa vice.
 		</td>
 	</tr>
 </table>
